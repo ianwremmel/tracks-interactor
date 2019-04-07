@@ -26,7 +26,10 @@
   "keywords": [],
   "author": "Ian Remmel <1182361+ianwremmel@users.noreply.github.com>",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "@ianwremmel/exception": "^2.1.0",
+    "immer": "^2.1.5"
+  },
   "devDependencies": {
     "@babel/cli": "^7.4.3",
     "@babel/core": "^7.4.3",
@@ -35,9 +38,11 @@
     "@commitlint/cli": "^7.5.2",
     "@commitlint/config-conventional": "^7.5.0",
     "@ianwremmel/eslint-plugin-ianwremmel": "^3.0.0",
+    "@types/chai": "^4.1.7",
     "@types/jest": "^24.0.11",
     "@types/node": "^11.13.0",
     "@typescript-eslint/parser": "^1.6.0",
+    "chai": "^4.2.0",
     "condition-circle": "^2.0.2",
     "eslint": "^5.16.0",
     "eslint-config-prettier": "^4.1.0",
