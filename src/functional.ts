@@ -2,6 +2,8 @@ import {Exception} from '@ianwremmel/exception';
 
 import {TypeNarrowingError} from './lib/type-narrowing-error';
 
+/* eslint-disable require-jsdoc */
+
 /** Thrown when an Interactor is failed via context.fail */
 export class InteractorFailure<S, T> extends Exception {
   context: Context<S, T>;
@@ -63,6 +65,8 @@ export interface FailedContext<S, T> extends Context<S, T> {
   error: InteractorFailure<S, T>;
 }
 
+type ResultContext<S, T, R> = SuccessContext<S, R> | FailedContext<S, T>;
+
 export interface Interactor<S, T, R> {
   // this should return a SuccessContext rather than a context, but that breaks
   // typescript inferrence when passing an Interactor to interact()
@@ -78,10 +82,27 @@ export interface Interactor<S, T, R> {
  */
 export async function interact<S, T, R>(
   i: Interactor<S, T, R>,
+  ctx: Context<S, T>
+): Promise<ResultContext<S, T, R>>;
+export async function interact<S, T, R>(
+  i: Interactor<S, T, R>,
   services: S,
   data: T
-): Promise<SuccessContext<S, R> | FailedContext<S, T>> {
-  const ctx = new Context(services, data);
+): Promise<ResultContext<S, T, R>>;
+export async function interact<S, T, R>(
+  ...args: any[]
+): Promise<ResultContext<S, T, R>> {
+  let i: Interactor<S, T, R>;
+  let ctx: Context<S, T>;
+  if (args.length === 2) {
+    [i, ctx] = args as [Interactor<S, T, R>, Context<S, T>];
+  } else {
+    let services: S;
+    let data: T;
+    [i, services, data] = args as [Interactor<S, T, R>, S, T];
+    ctx = new Context(services, data);
+  }
+
   try {
     const ret = await i(ctx);
     if (ctx.failed) {
@@ -96,3 +117,9 @@ export async function interact<S, T, R>(
     return ctx as FailedContext<S, T>;
   }
 }
+
+interface Organizer<S, T, R> extends Interactor<S, T, R> {
+  organize<RR>(i: Interactor<S, T, RR>): Organizer<S, T, RR>;
+}
+
+export function organize<S, T, R>(i: Interactor<S, T, R>): Organizer<S, T, R> {}
