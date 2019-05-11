@@ -19,19 +19,23 @@ const services = {
 
 type ServiceMap = typeof services;
 
-interface AShape {
+interface CommonShape {
+  services: ServiceMap;
+}
+
+interface AShape extends CommonShape {
   a: boolean;
 }
 
-interface BShape {
+interface BShape extends CommonShape {
   b: boolean;
 }
 
-interface CShape {
+interface CShape extends CommonShape {
   c: boolean;
 }
 
-interface DShape {
+interface DShape extends CommonShape {
   d: boolean;
 }
 
@@ -39,79 +43,94 @@ describe('Kernel', () => {
   describe('Interactor', () => {
     describe('interact()', () => {
       it('chains together multiple interactors', async () => {
-        class A extends Interactor<ServiceMap, AShape, BShape> {
+        class A extends Interactor<AShape, BShape> {
           async call() {
-            this.services.a.method();
-            return this.context.extend(() => ({b: true}));
+            this.context.data.services.a.method();
+            return this.context.extend((draft) => ({
+              b: true,
+              services: draft.services,
+            }));
           }
         }
 
-        class B extends Interactor<ServiceMap, BShape, CShape> {
+        class B extends Interactor<BShape, CShape> {
           async call() {
-            this.services.b.method();
-            return this.context.extend(() => ({c: true}));
+            this.context.data.services.b.method();
+            return this.context.extend((draft) => ({
+              c: true,
+              services: draft.services,
+            }));
           }
         }
 
-        class O extends Interactor<ServiceMap, AShape, CShape> {
+        class O extends Interactor<AShape, CShape> {
           async call() {
             return organize(A)
               .organize(B)
-              .call(this.services, this.context);
+              .call(this.context);
           }
         }
 
-        const context = await interact(services, O, {a: true});
-        expect(context.data).toEqual({c: true});
+        const context = await interact(O, {a: true, services});
+        expect(context.data).toEqual({c: true, services});
         expect(services.a.method).toHaveBeenCalled();
         expect(services.b.method).toHaveBeenCalled();
         expect(services.c.method).not.toHaveBeenCalled();
       });
 
       it('reverts interactor actions if a failure occurs', async () => {
-        class A extends Interactor<ServiceMap, AShape, BShape> {
+        class A extends Interactor<AShape, BShape> {
           async call() {
-            this.services.a.method();
-            return this.context.extend(() => ({b: true}));
+            this.context.data.services.a.method();
+            return this.context.extend((draft) => ({
+              b: true,
+              services: draft.services,
+            }));
           }
           async rollback() {
-            this.services.a.unmethod();
+            this.context.data.services.a.unmethod();
           }
         }
 
-        class B extends Interactor<ServiceMap, BShape, CShape> {
+        class B extends Interactor<BShape, CShape> {
           async call() {
-            this.services.b.method();
-            return this.context.extend(() => ({c: true}));
+            this.context.data.services.b.method();
+            return this.context.extend((draft) => ({
+              c: true,
+              services: draft.services,
+            }));
           }
 
           async rollback() {
-            this.services.b.unmethod();
+            this.context.data.services.b.unmethod();
           }
         }
 
-        class C extends Interactor<ServiceMap, CShape, DShape> {
+        class C extends Interactor<CShape, DShape> {
           async call() {
-            this.services.c.method();
+            this.context.data.services.c.method();
             this.context.fail('mock failure');
-            return this.context.extend(() => ({d: true}));
+            return this.context.extend((draft) => ({
+              d: true,
+              services: draft.services,
+            }));
           }
 
           async rollback() {
-            this.services.c.unmethod();
+            this.context.data.services.c.unmethod();
           }
         }
 
-        class O extends Interactor<ServiceMap, AShape, DShape> {
+        class O extends Interactor<AShape, DShape> {
           async call() {
             return organize(A)
               .organize(B)
               .organize(C)
-              .call(this.services, this.context);
+              .call(this.context);
           }
         }
 
-        const context = await interact(services, O, {a: true});
+        const context = await interact(O, {a: true, services});
         expect(services.a.method).toHaveBeenCalled();
         expect(services.b.method).toHaveBeenCalled();
         expect(services.c.method).toHaveBeenCalled();

@@ -10,30 +10,24 @@ import {Context, InteractorFailure} from './context';
  * @param context
  */
 
-export async function interact<S, T, R>(
-  services: S,
-  I: InteractorConstructor<S, T, R>,
+export async function interact<T, R>(
+  I: InteractorConstructor<T, R>,
   context: T | Context<T>,
   returnInteractor: boolean
-): Promise<{context: Context<R>; interactor: Interactor<S, T, R>}>;
+): Promise<{context: Context<R>; interactor: Interactor<T, R>}>;
 
-export async function interact<S, T, R>(
-  services: S,
-  I: InteractorConstructor<S, T, R>,
+export async function interact<T, R>(
+  I: InteractorConstructor<T, R>,
   context: T | Context<T>
 ): Promise<Context<R>>;
 
 /** Function for invoking an Interactor (or Organizer) */
-export async function interact<S, T, R>(
-  services: S,
-  I: InteractorConstructor<S, T, R>,
+export async function interact<T, R>(
+  I: InteractorConstructor<T, R>,
   context: T | Context<T>,
   returnInteractor?: boolean
 ) {
-  const i = new I(
-    services,
-    context instanceof Context ? context : new Context(context)
-  );
+  const i = new I(context instanceof Context ? context : new Context(context));
   try {
     let ret: Context<R>;
 

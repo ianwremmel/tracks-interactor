@@ -33,11 +33,10 @@ testable units.
 npm install @ianwremmel/tracks-interactor
 ```
 
-Define your interactor. You'll need to tell it about your app's services, as
-well as the shapes of the data it will accept and produce. Then, you'll need to
-define `call`, which does the interactor's work. `call` accepts a `Context<T>`
-and returns a `Context<R>`. (In the following example, `T` is `AuthToken` and
-`R` is `Model<User>`).
+Define your interactor. You'll need to tell it about the shapes of the data it
+will accept and produce. Then, you'll need to define `call`, which does the
+interactor's work. `call` accepts a `Context<T>` and returns a `Context<R>`. (In
+the following example, `T` is `AuthToken` and `R` is `Model<User>`).
 
 ```ts
 import {Interactor} from 'interactor';
@@ -45,7 +44,7 @@ import {Interactor} from 'interactor';
 type AuthToken = string;
 type User = Model<User>;
 
-class Authorize extends Interactor<ServiceMap, AuthToken, User> {
+class Authorize extends Interactor<AuthToken, User> {
     call() {
         const user = await User.findByToken(this.context.data);
         if (!user) {
@@ -67,10 +66,6 @@ const router = express.Router();
 
 router.use(async (req, res, next) => {
     const context = await interact(
-        // This assumes you put services on your express Application instance.
-        // Use whatever method seems most appropriate for your app for getting a
-        // handle to your services.
-        req.app.services,
         Authorize,
         new Context(req.headers.authorization)
     );
@@ -130,12 +125,27 @@ actionable values.
 -   The gem invokes a given Interactor via its static `call` method. TypeScript
     doesn't make type arguments visible to static methods, so we use the bare
     method `interact` as a stand-in for `Interactor.call()`.
--   `interact` requires three parameters: the `Interactor`, the `context`, and a
-    `services` map containing injected dependencies.
 -   `after`, `before`, and `around` may not alter their context (they may fail
     the context, though that should be avoided in `after` and `around`).
 -   Organizers are sementically similar, but syntactically very different. See
     the section on [Organizers](#organizers) for details.
+
+## Breaking Changes
+
+-   A previous version of this package expected a `services` object to be passed
+    to `interact`. You should just put your services on the context.
+
+    Instead of
+
+    ```ts
+    interact(services, MyInteractor, {...args});
+    ```
+
+    do
+
+    ```ts
+    interact(MyInteractor, {services, ...args});
+    ```
 
 ## Maintainer
 

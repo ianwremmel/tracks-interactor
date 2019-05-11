@@ -2,29 +2,11 @@ import {Context} from './context';
 import {interact} from './interact';
 import {Interactor} from './interactor';
 
-interface ServiceOne {
-  useServiceOne: () => void;
-}
-
 interface Shape {
   a: boolean;
 }
 
-const services = {
-  one: {
-    useServiceOne: jest.fn(),
-  },
-};
-
-abstract class BaseInteractor extends Interactor<
-  typeof services,
-  Shape,
-  Shape
-> {
-  constructor(context: Context<Shape>) {
-    super(services, context);
-  }
-}
+abstract class BaseInteractor extends Interactor<Shape, Shape> {}
 
 describe('Kernel', () => {
   describe('Interactor', () => {
@@ -65,34 +47,12 @@ describe('Kernel', () => {
         });
       });
 
-      describe('#services', () => {
-        it('is a map granting access to application services', async () => {
-          class A extends BaseInteractor {
-            async call() {
-              services.one.useServiceOne();
-              return new Context({a: !this.context.data.a});
-            }
-          }
-
-          await expect(new A(new Context({a: true})).call()).resolves.toEqual({
-            data: {
-              a: false,
-            },
-          });
-          expect(services.one.useServiceOne).toHaveBeenCalled();
-        });
-      });
-
       describe('#before()', () => {
         it('invokes common functionality before `#call()`', async () => {
           const commonBeforeSpy = jest.fn();
           const specializedBeforeSpy = jest.fn();
 
-          abstract class CommonBase extends Interactor<
-            typeof services,
-            Shape,
-            Shape
-          > {
+          abstract class CommonBase extends Interactor<Shape, Shape> {
             async before() {
               commonBeforeSpy();
             }
@@ -109,7 +69,7 @@ describe('Kernel', () => {
             }
           }
 
-          await interact(services, Specialized, {a: false});
+          await interact(Specialized, {a: false});
 
           expect(commonBeforeSpy).toHaveBeenCalled();
           expect(specializedBeforeSpy).toHaveBeenCalled();
@@ -119,11 +79,7 @@ describe('Kernel', () => {
           const commonBeforeSpy = jest.fn();
           const specializedBeforeSpy = jest.fn();
 
-          abstract class CommonBase extends Interactor<
-            typeof services,
-            Shape,
-            Shape
-          > {
+          abstract class CommonBase extends Interactor<Shape, Shape> {
             async before() {
               commonBeforeSpy();
             }
@@ -142,7 +98,7 @@ describe('Kernel', () => {
           }
 
           await expect(
-            interact(services, Specialized, {a: false})
+            interact(Specialized, {a: false})
           ).resolves.toMatchObject({success: false});
 
           expect(commonBeforeSpy).toHaveBeenCalled();
@@ -155,11 +111,7 @@ describe('Kernel', () => {
           const commonAfterSpy = jest.fn();
           const specializedAfterSpy = jest.fn();
 
-          abstract class CommonBase extends Interactor<
-            typeof services,
-            Shape,
-            Shape
-          > {
+          abstract class CommonBase extends Interactor<Shape, Shape> {
             async after() {
               commonAfterSpy();
             }
@@ -176,7 +128,7 @@ describe('Kernel', () => {
             }
           }
 
-          await interact(services, Specialized, {a: false});
+          await interact(Specialized, {a: false});
 
           expect(commonAfterSpy).toHaveBeenCalled();
           expect(specializedAfterSpy).toHaveBeenCalled();
@@ -187,11 +139,7 @@ describe('Kernel', () => {
         it('halts execution on failure', async () => {
           const spy = jest.fn();
 
-          abstract class CommonBase extends Interactor<
-            typeof services,
-            Shape,
-            Shape
-          > {
+          abstract class CommonBase extends Interactor<Shape, Shape> {
             async around(fn: () => Promise<void>) {
               spy('base before');
               this.context.fail('beep');
@@ -211,7 +159,7 @@ describe('Kernel', () => {
             }
           }
 
-          await interact(services, Specialized, {a: false});
+          await interact(Specialized, {a: false});
 
           expect(spy).toHaveBeenCalledTimes(2);
           expect(spy).toHaveBeenNthCalledWith(1, 'specialized before');
@@ -221,11 +169,7 @@ describe('Kernel', () => {
         it('invokes common functionality before and after `#call()`', async () => {
           const spy = jest.fn();
 
-          abstract class CommonBase extends Interactor<
-            typeof services,
-            Shape,
-            Shape
-          > {
+          abstract class CommonBase extends Interactor<Shape, Shape> {
             async around(fn: () => Promise<void>) {
               spy('base before');
               await fn();
@@ -244,7 +188,7 @@ describe('Kernel', () => {
             }
           }
 
-          await interact(services, Specialized, {a: false});
+          await interact(Specialized, {a: false});
 
           expect(spy).toHaveBeenNthCalledWith(1, 'specialized before');
           expect(spy).toHaveBeenNthCalledWith(2, 'base before');
@@ -257,7 +201,7 @@ describe('Kernel', () => {
         it('execute in the correct order', async () => {
           const spy = jest.fn();
 
-          class I extends Interactor<typeof services, Shape, Shape> {
+          class I extends Interactor<Shape, Shape> {
             async before() {
               spy('before');
             }
@@ -274,7 +218,7 @@ describe('Kernel', () => {
             }
           }
 
-          await interact(services, I, {a: false});
+          await interact(I, {a: false});
 
           expect(spy).toHaveBeenCalledTimes(4);
           expect(spy).toHaveBeenNthCalledWith(1, 'around: before');

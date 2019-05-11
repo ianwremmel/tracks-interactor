@@ -6,20 +6,20 @@ describe('Kernel', () => {
   describe('Interactor', () => {
     describe('interact()', () => {
       it('turn T into Context<T> when necessary', async () => {
-        class A extends Interactor<{}, 1> {
+        class A extends Interactor<1> {
           async call() {
             return this.context;
           }
         }
 
-        const context = await interact({}, A, 1);
+        const context = await interact(A, 1);
         expect(context.data).toEqual(1);
       });
 
       it('makes context failures throwsafe', async () => {
         const spy = jest.fn();
 
-        class A extends Interactor<{}, any> {
+        class A extends Interactor<any> {
           async call() {
             this.context.fail(new Error('something bad happened'));
             spy();
@@ -27,9 +27,7 @@ describe('Kernel', () => {
           }
         }
 
-        await expect(
-          interact({}, A, new Context({}))
-        ).resolves.toMatchSnapshot();
+        await expect(interact(A, new Context({}))).resolves.toMatchSnapshot();
         expect(spy).not.toHaveBeenCalled();
       });
 
@@ -44,7 +42,7 @@ describe('Kernel', () => {
           b: boolean;
         }
 
-        class A extends Interactor<{}, Input, Output> {
+        class A extends Interactor<Input, Output> {
           async call(): Promise<Context<Output>> {
             spy(this.context);
             return this.context.extend(() => ({
@@ -54,7 +52,6 @@ describe('Kernel', () => {
         }
 
         const out = await interact(
-          {},
           A,
           new Context({
             a: false,
