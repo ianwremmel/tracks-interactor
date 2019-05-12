@@ -68,14 +68,17 @@ export async function interact<T, R>(
     return ret;
   } catch (err) {
     if (err instanceof InteractorFailure) {
-      const typedErr = err as InteractorFailure<T>;
+      const typedErr = err as InteractorFailure;
       if (returnInteractor) {
         return {
           context,
           interactor: i,
         };
       }
-      return typedErr.context;
+      return {
+        error: err,
+        failed: true,
+      };
     }
     throw err;
   }

@@ -29,11 +29,12 @@ class ChainedOrganizer<T, TN, RL> implements Organizer<T, TN> {
   async call(context: Context<T>): Promise<Context<TN>> {
     const result = await this.last.call(context);
     const {context: final, interactor} = await interact(this.IC, result, true);
+    if (final.failed) {
+      await this.last.rollback();
+      throw final.error;
+    }
     this.interactor = interactor;
     this.nextContext = final;
-    if (result.failed) {
-      await this.last.rollback();
-    }
     return final;
   }
 
@@ -75,6 +76,9 @@ class InitialOrganizer<T, TN> implements Organizer<T, TN> {
   async call(context: Context<T>): Promise<Context<TN>> {
     const {context: final, interactor} = await interact(this.IC, context, true);
     this.interactor = interactor;
+    if (final.failed) {
+      throw final.error;
+    }
     this.nextContext = final;
     return final;
   }

@@ -58,7 +58,7 @@ describe('interact()', () => {
     const result = await interact(AlwaysFailsC, {c: true, services});
 
     if (result.failed) {
-      expect(result.data).not.toHaveProperty('d');
+      expect(result).not.toHaveProperty('data');
       expect(result.error).toBeInstanceOf(InteractorFailure);
       expect(result.error.message).toMatch(/mock failure/);
     } else {
