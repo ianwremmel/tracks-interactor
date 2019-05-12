@@ -31,7 +31,7 @@ class ChainedOrganizer<T, TN, RL> implements Organizer<T, TN> {
     const {context: final, interactor} = await interact(this.IC, result, true);
     this.interactor = interactor;
     this.nextContext = final;
-    if (result.failure) {
+    if (result.failed) {
       await this.last.rollback();
     }
     return final;

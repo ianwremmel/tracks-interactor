@@ -45,6 +45,6 @@ describe('interact()', () => {
     expect(services.c.unmethod).not.toHaveBeenCalled();
     expect(services.b.unmethod).toHaveBeenCalled();
     expect(services.a.unmethod).toHaveBeenCalled();
-    expect(context.failure).toBe(true);
+    expect(context.failed).toBe(true);
   });
 });

@@ -1,37 +1,19 @@
-import {assert} from 'chai';
-
 import {Context, InteractorFailure} from './context';
 
 describe('Context', () => {
-  describe('#success', () => {
-    it('is true by default', () => {
-      const context = new Context({});
-      assert.isTrue(context.success);
-    });
-
-    it('is false after failing', () => {
-      const context = new Context({});
-      assert.isTrue(context.success);
-      assert.throws(() => {
-        context.fail('testing');
-      }, InteractorFailure);
-      assert.isFalse(context.success);
-    });
-  });
-
-  describe('#failure', () => {
+  describe('#failed', () => {
     it('is false by default', () => {
       const context = new Context({});
-      assert.isFalse(context.failure);
+      expect(context.failed).toBe(false);
     });
 
     it('is true after failing', () => {
       const context = new Context({});
-      assert.isFalse(context.failure);
-      assert.throws(() => {
+      expect(context.failed).toBe(false);
+      expect(() => {
         context.fail('test');
-      }, InteractorFailure);
-      assert.isTrue(context.failure);
+      }).toThrow(InteractorFailure);
+      expect(context.failed).toBe(true);
     });
   });
 

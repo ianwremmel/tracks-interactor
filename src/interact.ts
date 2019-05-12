@@ -1,5 +1,6 @@
 import {Interactor, InteractorConstructor} from './interactor';
-import {Context, InteractorFailure} from './context';
+import {Context, InteractorFailure, ResultContext} from './context';
+import {TypeNarrowingError} from './lib/type-narrowing-error';
 
 /**
  * `interact()` corresponds to the class method `Interactor.call` from ruby, but
@@ -13,13 +14,13 @@ import {Context, InteractorFailure} from './context';
 export async function interact<T, R>(
   I: InteractorConstructor<T, R>,
   context: T | Context<T>,
-  returnInteractor: boolean
-): Promise<{context: Context<R>; interactor: Interactor<T, R>}>;
+  returnInteractor: true
+): Promise<{context: ResultContext<T, R>; interactor: Interactor<T, R>}>;
 
 export async function interact<T, R>(
   I: InteractorConstructor<T, R>,
   context: T | Context<T>
-): Promise<Context<R>>;
+): Promise<ResultContext<T, R>>;
 
 /** Function for invoking an Interactor (or Organizer) */
 export async function interact<T, R>(
@@ -27,7 +28,9 @@ export async function interact<T, R>(
   context: T | Context<T>,
   returnInteractor?: boolean
 ) {
-  const i = new I(context instanceof Context ? context : new Context(context));
+  const typedContext =
+    context instanceof Context ? context : new Context(context);
+  const i = new I(typedContext);
   try {
     let ret: Context<R>;
 
@@ -65,13 +68,14 @@ export async function interact<T, R>(
     return ret;
   } catch (err) {
     if (err instanceof InteractorFailure) {
+      const typedErr = err as InteractorFailure<T>;
       if (returnInteractor) {
         return {
           context,
           interactor: i,
         };
       }
-      return err.context;
+      return typedErr.context;
     }
     throw err;
   }
