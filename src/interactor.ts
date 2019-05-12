@@ -1,11 +1,10 @@
 import {Context} from './context';
 
-export interface InteractorConstructor<S, T, R> {
-  new (services: S, context: Context<T>): Interactor<S, T, R>;
+export interface InteractorConstructor<T, R> {
+  new (context: Context<T>): Interactor<T, R>;
 }
 
-export interface Interactor<S, T, R> {
-  services: S;
+export interface Interactor<T, R> {
   context: Context<T>;
   after(): Promise<void>;
   around(fn: () => Promise<void>): Promise<void>;
@@ -14,10 +13,9 @@ export interface Interactor<S, T, R> {
 }
 
 /** Standardized interface to business logic */
-export abstract class Interactor<S, T, R = T> {
+export abstract class Interactor<T, R = T> implements Interactor<T, R> {
   /** constructor */
-  constructor(services: S, context: Context<T>) {
-    this.services = services;
+  constructor(context: Context<T>) {
     this.context = context;
   }
   abstract async call(): Promise<Context<R>>;

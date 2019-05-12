@@ -3,9 +3,9 @@ import {Interactor, InteractorConstructor} from './interactor';
 import {Context, FailedContext} from './context';
 import {interact} from './interact';
 
-interface Organizer<S, T, R> {
-  organize<RR>(I: InteractorConstructor<S, R, RR>): Organizer<S, T, RR>;
-  call(services: S, context: Context<T>): Promise<Context<R>>;
+interface Organizer<T, R> {
+  organize<RR>(I: InteractorConstructor<R, RR>): Organizer<T, RR>;
+  call(context: Context<T>): Promise<Context<R>>;
   rollback(): Promise<void>;
 }
 
@@ -13,37 +13,33 @@ interface Organizer<S, T, R> {
  * Wrapper around each entry in an Organizer chain
  * @private
  */
-class ChainedOrganizer<S, T, TN, RL> implements Organizer<S, T, TN> {
-  IC: InteractorConstructor<S, RL, TN>;
-  last: Organizer<S, T, RL>;
-  interactor?: Interactor<S, RL, TN>;
+class ChainedOrganizer<T, TN, RL> implements Organizer<T, TN> {
+  IC: InteractorConstructor<RL, TN>;
+  last: Organizer<T, RL>;
+  interactor?: Interactor<RL, TN>;
   nextContext?: Context<TN>;
 
   /** constructor */
-  constructor(IC: InteractorConstructor<S, RL, TN>, last: Organizer<S, T, RL>) {
+  constructor(IC: InteractorConstructor<RL, TN>, last: Organizer<T, RL>) {
     this.IC = IC;
     this.last = last;
   }
 
   /** Invokes the wrapped Interactor */
-  async call(services: S, context: Context<T>): Promise<Context<TN>> {
-    const result = await this.last.call(services, context);
-    const {context: final, interactor} = await interact(
-      services,
-      this.IC,
-      result,
-      true
-    );
+  async call(context: Context<T>): Promise<Context<TN>> {
+    const result = await this.last.call(context);
+    const {context: final, interactor} = await interact(this.IC, result, true);
+    if (final.failed) {
+      await this.last.rollback();
+      throw final.error;
+    }
     this.interactor = interactor;
     this.nextContext = final;
-    if (result.failure) {
-      await this.last.rollback();
-    }
     return final;
   }
 
   /** Adds another Interactor to the chain */
-  organize<RN>(IC: InteractorConstructor<S, TN, RN>): Organizer<S, T, RN> {
+  organize<RN>(IC: InteractorConstructor<TN, RN>): Organizer<T, RN> {
     return new ChainedOrganizer(IC, this);
   }
 
@@ -66,31 +62,29 @@ class ChainedOrganizer<S, T, TN, RL> implements Organizer<S, T, TN> {
  * First Interactor in an Organizer chain
  * @private
  */
-class InitialOrganizer<S, T, TN> implements Organizer<S, T, TN> {
-  IC: InteractorConstructor<S, T, TN>;
-  interactor?: Interactor<S, T, TN>;
+class InitialOrganizer<T, TN> implements Organizer<T, TN> {
+  IC: InteractorConstructor<T, TN>;
+  interactor?: Interactor<T, TN>;
   nextContext?: Context<TN>;
 
   /** constructor */
-  constructor(IC: InteractorConstructor<S, T, TN>) {
+  constructor(IC: InteractorConstructor<T, TN>) {
     this.IC = IC;
   }
 
   /** Invokes the wrapped Interactor */
-  async call(services: S, context: Context<T>): Promise<Context<TN>> {
-    const {context: final, interactor} = await interact(
-      services,
-      this.IC,
-      context,
-      true
-    );
+  async call(context: Context<T>): Promise<Context<TN>> {
+    const {context: final, interactor} = await interact(this.IC, context, true);
     this.interactor = interactor;
+    if (final.failed) {
+      throw final.error;
+    }
     this.nextContext = final;
     return final;
   }
 
   /** Adds another Interactor to the chain */
-  organize<RN>(IC: InteractorConstructor<S, TN, RN>): Organizer<S, T, RN> {
+  organize<RN>(IC: InteractorConstructor<TN, RN>): Organizer<T, RN> {
     return new ChainedOrganizer(IC, this);
   }
 
@@ -109,8 +103,8 @@ class InitialOrganizer<S, T, TN> implements Organizer<S, T, TN> {
 }
 
 /** Chains Interactors */
-export function organize<S, T, R>(
-  IC: InteractorConstructor<S, T, R>
-): Organizer<S, T, R> {
+export function organize<T, R>(
+  IC: InteractorConstructor<T, R>
+): Organizer<T, R> {
   return new InitialOrganizer(IC);
 }

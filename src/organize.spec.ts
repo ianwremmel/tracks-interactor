@@ -1,125 +1,87 @@
 import {interact} from './interact';
 import {Interactor} from './interactor';
 import {organize} from './organize';
+import {
+  services,
+  AShape,
+  CShape,
+  DShape,
+  AlwaysSucceedsA,
+  AlwaysSucceedsB,
+  AlwaysFailsC,
+} from './test-helpers';
 
-const services = {
-  a: {
-    method: jest.fn(),
-    unmethod: jest.fn(),
-  },
-  b: {
-    method: jest.fn(),
-    unmethod: jest.fn(),
-  },
-  c: {
-    method: jest.fn(),
-    unmethod: jest.fn(),
-  },
-};
+describe('interact()', () => {
+  it('chains together multiple interactors', async () => {
+    class O extends Interactor<AShape, CShape> {
+      async call() {
+        return organize(AlwaysSucceedsA)
+          .organize(AlwaysSucceedsB)
+          .call(this.context);
+      }
+    }
 
-type ServiceMap = typeof services;
+    const context = await interact(O, {a: true, services});
+    expect(context.data).toEqual({c: true, services});
+    expect(services.a.method).toHaveBeenCalled();
+    expect(services.b.method).toHaveBeenCalled();
+    expect(services.c.after).not.toHaveBeenCalled();
+  });
 
-interface AShape {
-  a: boolean;
-}
+  it('reverts interactor actions if a failure occurs', async () => {
+    class O extends Interactor<AShape, DShape> {
+      async call() {
+        return organize(AlwaysSucceedsA)
+          .organize(AlwaysSucceedsB)
+          .organize(AlwaysFailsC)
+          .call(this.context);
+      }
+    }
 
-interface BShape {
-  b: boolean;
-}
+    const context = await interact(O, {a: true, services});
+    expect(services.a.method).toHaveBeenCalled();
+    expect(services.b.method).toHaveBeenCalled();
+    expect(services.c.after).not.toHaveBeenCalled();
+    expect(services.c.unmethod).not.toHaveBeenCalled();
+    expect(services.b.unmethod).toHaveBeenCalled();
+    expect(services.a.unmethod).toHaveBeenCalled();
+    expect(context.failed).toBe(true);
+  });
 
-interface CShape {
-  c: boolean;
-}
+  it('produces a successful context from an organizer', async () => {
+    class O extends Interactor<AShape, CShape> {
+      async call() {
+        return organize(AlwaysSucceedsA)
+          .organize(AlwaysSucceedsB)
+          .call(this.context);
+      }
+    }
+    const result = await interact(O, {a: true, services});
 
-interface DShape {
-  d: boolean;
-}
+    if (result.failed) {
+      expect(result.failed).toBe(false);
+    } else {
+      expect(result.data).toHaveProperty('c');
+      expect(result.data.c).toBe(true);
+    }
+  });
 
-describe('Kernel', () => {
-  describe('Interactor', () => {
-    describe('interact()', () => {
-      it('chains together multiple interactors', async () => {
-        class A extends Interactor<ServiceMap, AShape, BShape> {
-          async call() {
-            this.services.a.method();
-            return this.context.extend(() => ({b: true}));
-          }
-        }
+  it('produces a failed context from an organizer', async () => {
+    class O extends Interactor<AShape, DShape> {
+      async call() {
+        return organize(AlwaysSucceedsA)
+          .organize(AlwaysSucceedsB)
+          .organize(AlwaysFailsC)
+          .call(this.context);
+      }
+    }
+    const result = await interact(O, {a: true, services});
 
-        class B extends Interactor<ServiceMap, BShape, CShape> {
-          async call() {
-            this.services.b.method();
-            return this.context.extend(() => ({c: true}));
-          }
-        }
-
-        class O extends Interactor<ServiceMap, AShape, CShape> {
-          async call() {
-            return organize(A)
-              .organize(B)
-              .call(this.services, this.context);
-          }
-        }
-
-        const context = await interact(services, O, {a: true});
-        expect(context.data).toEqual({c: true});
-        expect(services.a.method).toHaveBeenCalled();
-        expect(services.b.method).toHaveBeenCalled();
-        expect(services.c.method).not.toHaveBeenCalled();
-      });
-
-      it('reverts interactor actions if a failure occurs', async () => {
-        class A extends Interactor<ServiceMap, AShape, BShape> {
-          async call() {
-            this.services.a.method();
-            return this.context.extend(() => ({b: true}));
-          }
-          async rollback() {
-            this.services.a.unmethod();
-          }
-        }
-
-        class B extends Interactor<ServiceMap, BShape, CShape> {
-          async call() {
-            this.services.b.method();
-            return this.context.extend(() => ({c: true}));
-          }
-
-          async rollback() {
-            this.services.b.unmethod();
-          }
-        }
-
-        class C extends Interactor<ServiceMap, CShape, DShape> {
-          async call() {
-            this.services.c.method();
-            this.context.fail('mock failure');
-            return this.context.extend(() => ({d: true}));
-          }
-
-          async rollback() {
-            this.services.c.unmethod();
-          }
-        }
-
-        class O extends Interactor<ServiceMap, AShape, DShape> {
-          async call() {
-            return organize(A)
-              .organize(B)
-              .organize(C)
-              .call(this.services, this.context);
-          }
-        }
-
-        const context = await interact(services, O, {a: true});
-        expect(services.a.method).toHaveBeenCalled();
-        expect(services.b.method).toHaveBeenCalled();
-        expect(services.c.method).toHaveBeenCalled();
-        expect(services.c.unmethod).not.toHaveBeenCalled();
-        expect(services.b.unmethod).toHaveBeenCalled();
-        expect(services.a.unmethod).toHaveBeenCalled();
-        expect(context.failure).toBe(true);
-      });
-    });
+    if (result.failed) {
+      expect(result).not.toHaveProperty('data');
+      expect(result).toHaveProperty('error');
+    } else {
+      expect(result.failed).toBe(false);
+    }
   });
 });

@@ -27,6 +27,9 @@ overrides:
       project: './tsconfig.json'
     rules:
       import/export: off
+      import/named: off
+      import/namespace: off
+      import/no-deprecated: off
       import/no-unresolved: off
       no-redeclare: off
       # use as types doesn"t count as used

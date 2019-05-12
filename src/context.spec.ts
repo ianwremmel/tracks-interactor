@@ -1,55 +1,33 @@
-import {assert} from 'chai';
-
 import {Context, InteractorFailure} from './context';
 
-describe('Kernel', () => {
-  describe('Interactor', () => {
-    describe('Context', () => {
-      describe('#success', () => {
-        it('is true by default', () => {
-          const context = new Context({});
-          assert.isTrue(context.success);
-        });
+describe('Context', () => {
+  describe('#failed', () => {
+    it('is false by default', () => {
+      const context = new Context({});
+      expect(context.failed).toBe(false);
+    });
 
-        it('is false after failing', () => {
-          const context = new Context({});
-          assert.isTrue(context.success);
-          assert.throws(() => {
-            context.fail('testing');
-          }, InteractorFailure);
-          assert.isFalse(context.success);
-        });
-      });
+    it('is true after failing', () => {
+      const context = new Context({});
+      expect(context.failed).toBe(false);
+      expect(() => {
+        context.fail('test');
+      }).toThrow(InteractorFailure);
+      expect(context.failed).toBe(true);
+    });
+  });
 
-      describe('#failure', () => {
-        it('is false by default', () => {
-          const context = new Context({});
-          assert.isFalse(context.failure);
-        });
+  describe('#extend()', () => {
+    it('produces a context with new data', () => {
+      const ctx1 = new Context({a: 1});
 
-        it('is true after failing', () => {
-          const context = new Context({});
-          assert.isFalse(context.failure);
-          assert.throws(() => {
-            context.fail('test');
-          }, InteractorFailure);
-          assert.isTrue(context.failure);
-        });
-      });
+      const recipe = () => {
+        return {b: 2};
+      };
 
-      describe('#extend()', () => {
-        it('produces a context with new data', () => {
-          const ctx1 = new Context({a: 1});
+      const ctx2 = ctx1.extend(recipe);
 
-          const recipe = () => {
-            return {b: 2};
-          };
-
-          const ctx2 = ctx1.extend(recipe);
-
-          expect(ctx2.data).toEqual({b: 2});
-        });
-      });
+      expect(ctx2.data).toEqual({b: 2});
     });
   });
 });
