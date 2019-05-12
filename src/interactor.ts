@@ -13,7 +13,7 @@ export interface Interactor<T, R> {
 }
 
 /** Standardized interface to business logic */
-export abstract class Interactor<T, R = T> {
+export abstract class Interactor<T, R = T> implements Interactor<T, R> {
   /** constructor */
   constructor(context: Context<T>) {
     this.context = context;
