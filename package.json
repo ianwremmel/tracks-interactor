@@ -28,7 +28,7 @@
   "author": "Ian Remmel <1182361+ianwremmel@users.noreply.github.com>",
   "license": "MIT",
   "dependencies": {
-    "@ianwremmel/exception": "^2.1.0",
+    "@ianwremmel/exception": "^3.0.0",
     "immer": "^5.0.0"
   },
   "devDependencies": {
