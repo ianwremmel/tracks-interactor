@@ -5,7 +5,7 @@ import {produce} from 'immer';
 export class InteractorFailure extends Exception {
   original?: Error;
 
-  /** constructor */
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
   constructor(message: any) {
     super(message);
     if (message instanceof Error) {
@@ -39,7 +39,7 @@ export class Context<T> {
   extend<R>(fn: (data: T) => R): Context<R> {
     const nextData = produce(this.data, fn);
     const next = new Context(nextData);
-    // @ts-ignore - I'm not sure how to get templating right here, but
+    // @ts-expect-error - I'm not sure how to get templating right here, but
     // typechecking works correctly outside of this function, so I think it's
     // fine
     return next;

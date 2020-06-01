@@ -25,6 +25,15 @@ testable units.
 ## Table of Contents
 
 <!-- toc -->
+
+-   [Install](#install)
+    -   [Organizers](#organizers)
+-   [Differences from the Interactor Gem](#differences-from-the-interactor-gem)
+-   [Breaking Changes](#breaking-changes)
+-   [Maintainer](#maintainer)
+-   [Contribute](#contribute)
+-   [License](#license)
+
 <!-- tocstop -->
 
 ## Install

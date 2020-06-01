@@ -1,6 +1,6 @@
 import {TypeNarrowingError} from './lib/type-narrowing-error';
 import {Interactor, InteractorConstructor} from './interactor';
-import {Context, FailedContext} from './context';
+import {Context} from './context';
 import {interact} from './interact';
 
 interface Organizer<T, R> {

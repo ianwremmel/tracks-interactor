@@ -12,8 +12,6 @@ interface Shape {
   a: boolean;
 }
 
-abstract class BaseInteractor extends Interactor<Shape, Shape> {}
-
 describe('Interactor', () => {
   describe('#call()', () => {
     it("does the bulk of the interactor's work", async () => {

@@ -7,8 +7,7 @@
     "outDir": "dist",
     "resolveJsonModule": true,
     "strict": true,
-    "target": "es2017",
-    "types": ["jest"]
+    "target": "es2019"
   },
   "include": [
     "./src/**/*.js",
