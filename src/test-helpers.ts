@@ -2,7 +2,6 @@
 /* eslint-disable require-jsdoc */
 
 import {Interactor} from './interactor';
-import {organize} from './organize';
 
 export const services = {
   a: {

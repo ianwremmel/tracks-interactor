@@ -1,6 +1,5 @@
 import {Interactor, InteractorConstructor} from './interactor';
 import {Context, InteractorFailure, ResultContext} from './context';
-import {TypeNarrowingError} from './lib/type-narrowing-error';
 
 /**
  * `interact()` corresponds to the class method `Interactor.call` from ruby, but
@@ -68,7 +67,6 @@ export async function interact<T, R>(
     return ret;
   } catch (err) {
     if (err instanceof InteractorFailure) {
-      const typedErr = err as InteractorFailure;
       if (returnInteractor) {
         return {
           context,
