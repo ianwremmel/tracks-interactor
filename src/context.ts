@@ -3,8 +3,6 @@ import {produce} from 'immer';
 
 /** Thrown when an Interactor is failed via context.fail */
 export class InteractorFailure extends Exception {
-  original?: Error;
-
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
   constructor(message: any) {
     super(message);
