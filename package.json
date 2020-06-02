@@ -76,12 +76,6 @@
       "pre-commit": "lint-staged"
     }
   },
-  "release": {
-    "branches": [
-      "master"
-    ],
-    "ci": true
-  },
   "publishConfig": {
     "access": "public"
   },
