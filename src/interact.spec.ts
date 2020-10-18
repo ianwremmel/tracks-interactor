@@ -47,8 +47,6 @@ describe('interact()', () => {
 
   it('makes context failures throwsafe', async () => {
     const result = await interact(AlwaysFailsC, {c: true, services});
-    expect(services.c.after).not.toHaveBeenCalled();
-    expect(services.c.before).toHaveBeenCalled();
     expect(result.error).toMatchInlineSnapshot(
       `[InteractorFailure: mock failure]`
     );
