@@ -22,7 +22,8 @@ export async function interact<T, R>(
 ) {
   const typedContext =
     context instanceof Context ? context : new Context(context);
-  const i = new I(typedContext);
+  const i = new I();
+  i.context = typedContext;
   try {
     return await i.call();
   } catch (err) {

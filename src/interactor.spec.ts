@@ -4,9 +4,10 @@ import {AlwaysSucceedsA, services} from './test-helpers';
 describe('Interactor', () => {
   describe('#call()', () => {
     it("does the bulk of the interactor's work", async () => {
-      await expect(
-        new AlwaysSucceedsA(new Context({a: true, services})).call()
-      ).resolves.toMatchObject({
+      const i = new AlwaysSucceedsA();
+      const c = new Context({a: true, services});
+      i.context = c;
+      await expect(i.call()).resolves.toMatchObject({
         data: {
           b: true,
         },
