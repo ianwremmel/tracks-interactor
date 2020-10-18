@@ -8,22 +8,18 @@ export const services = {
     after: jest.fn(),
     before: jest.fn(),
     method: jest.fn(),
-    unmethod: jest.fn(),
   },
   b: {
     after: jest.fn(),
     before: jest.fn(),
     method: jest.fn(),
-    unmethod: jest.fn(),
   },
   c: {
     after: jest.fn(),
     before: jest.fn(),
-    unmethod: jest.fn(),
   },
   d: {
     method: jest.fn(),
-    unmethod: jest.fn(),
   },
 };
 
@@ -65,10 +61,6 @@ export class AlwaysSucceedsA extends Interactor<AShape, BShape> {
       services: draft.services,
     }));
   }
-
-  async rollback() {
-    this.context.data.services.a.unmethod();
-  }
 }
 
 export class AlwaysSucceedsB extends Interactor<BShape, CShape> {
@@ -83,10 +75,6 @@ export class AlwaysSucceedsB extends Interactor<BShape, CShape> {
       c: true,
       services: draft.services,
     }));
-  }
-
-  async rollback() {
-    this.context.data.services.b.unmethod();
   }
 }
 
@@ -105,10 +93,6 @@ export class AlwaysFailsC extends Interactor<CShape, DShape> {
       d: true,
       services: draft.services,
     }));
-  }
-
-  async rollback() {
-    this.context.data.services.c.unmethod();
   }
 }
 

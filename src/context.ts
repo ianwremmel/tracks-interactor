@@ -31,8 +31,11 @@ export class Context<T> {
   }
 
   /**
-   * Used within Organized Interactor chains to produce a new context for
-   * passing to the next Interactor
+   * Creates a new Context from the existing. Typically use to produce the
+   * return value for Interactor#call.
+   *
+   * A bit of a vestige from a time when we had Organizers. This method may be
+   * removed in favor of returning a plan value.
    */
   extend<R>(fn: (data: T) => R): Context<R> {
     const nextData = produce(this.data, fn);

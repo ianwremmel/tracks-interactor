@@ -27,7 +27,6 @@ testable units.
 <!-- toc -->
 
 -   [Install](#install)
-    -   [Organizers](#organizers)
 -   [Differences from the Interactor Gem](#differences-from-the-interactor-gem)
 -   [Breaking Changes](#breaking-changes)
 -   [Maintainer](#maintainer)
@@ -89,46 +88,6 @@ router.get('/account', (req, res) => {
 });
 ```
 
-### Organizers
-
-The real power of Interactors comes from chaining small bits of functionality
-together into larger units. The Ruby Interactor gem achieves this by,
-effectively, just passing a list of interactors. In order to get the type-safety
-required to put all our validation at the frontend, we take a slightly different
-approach. Given the Interactors `A`, `B`, and `C`, the following is the
-functional equivalent to Ruby's `organize A, B, C` for producing an Interactor
-`O`:
-
-```ts
-interface AShape{...}
-interface BShape{...}
-interface CShape{...}
-interface DShape{...}
-
-interface ServiceMap{...}
-
-interface A extends Interactor<ServiceMap, AShape, BShape>{}
-interface B extends Interactor<ServiceMap, BShape, CShape>{}
-interface C extends Interactor<ServiceMap, CShape, DShape>{}
-
-class O implement Interactor<ServiceMap, AShape, DSHape> {
-  async call() {
-    return organize(A)
-      .organize(B)
-      .organize(C)
-      .call(this.context);
-  }
-}
-```
-
-When an Interactor in an `organize()` chain fails, the `rollback()` method of
-each prior interactor, if it exists, will be executed with the original context
-passed to that interactor.
-
-Note: a context will still be returned from the Organizer, but nothing except
-its `data` property should be considered junk. Only its `error` propery contains
-actionable values.
-
 ## Differences from the Interactor Gem
 
 -   The gem invokes a given Interactor via its static `call` method. TypeScript
@@ -136,8 +95,9 @@ actionable values.
     method `interact` as a stand-in for `Interactor.call()`.
 -   `after`, `before`, and `around` may not alter their context (they may fail
     the context, though that should be avoided in `after` and `around`).
--   Organizers are sementically similar, but syntactically very different. See
-    the section on [Organizers](#organizers) for details.
+-   Organizers don't exist. A previous version of this library included them,
+    but having not used that portion of the library for over a year, they're
+    continued maintencance didn't seem worth it.
 
 ## Breaking Changes
 
