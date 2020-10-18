@@ -24,33 +24,7 @@ export async function interact<T, R>(
     context instanceof Context ? context : new Context(context);
   const i = new I(typedContext);
   try {
-    let ret: Context<R>;
-
-    const inner = async () => {
-      if (typeof i.before === 'function') {
-        await i.before();
-      }
-      ret = await i.call();
-      if (typeof i.after === 'function') {
-        await i.after();
-      }
-    };
-
-    if (typeof i.around === 'function') {
-      await i.around(inner);
-    } else {
-      await inner();
-    }
-
-    // @ts-ignore - typescript thinks ret is being used before it's defined, but
-    // it's not.
-    if (typeof ret === 'undefined') {
-      throw new TypeError(
-        'Return context has not been assigned. Did you forget to invoke `fn()` in your `around()` method?'
-      );
-    }
-
-    return ret;
+    return await i.call();
   } catch (err) {
     if (err instanceof InteractorFailure) {
       return {

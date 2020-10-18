@@ -8,9 +8,6 @@ export interface InteractorConstructor<T, R> {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Interactor<T, R> {
   context: Context<T>;
-  after(): Promise<void>;
-  around(fn: () => Promise<void>): Promise<void>;
-  before(): Promise<void>;
 }
 
 /** Standardized interface to business logic */

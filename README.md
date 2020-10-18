@@ -93,8 +93,9 @@ router.get('/account', (req, res) => {
 -   The gem invokes a given Interactor via its static `call` method. TypeScript
     doesn't make type arguments visible to static methods, so we use the bare
     method `interact` as a stand-in for `Interactor.call()`.
--   `after`, `before`, and `around` may not alter their context (they may fail
-    the context, though that should be avoided in `after` and `around`).
+-   `after`, `before`, and `around` don't exist. A previous version of this
+    library included them, but having not used that portion of the library for
+    over a year, they're continued maintencance didn't seem worth it.Î
 -   Organizers don't exist. A previous version of this library included them,
     but having not used that portion of the library for over a year, they're
     continued maintencance didn't seem worth it.
