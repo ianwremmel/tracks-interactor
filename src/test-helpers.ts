@@ -34,20 +34,20 @@ export interface DShape extends CommonShape {
 export class AlwaysSucceedsA extends Interactor<AShape, BShape> {
   async call() {
     this.context.data.services.a.method();
-    return this.context.extend((draft) => ({
+    return {
       b: true,
-      services: draft.services,
-    }));
+      services: this.context.data.services,
+    };
   }
 }
 
 export class AlwaysFailsC extends Interactor<CShape, DShape> {
   async call() {
     this.context.fail('mock failure');
-    return this.context.extend((draft) => ({
+    return {
       d: true,
-      services: draft.services,
-    }));
+      services: this.context.data.services,
+    };
   }
 }
 

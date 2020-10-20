@@ -16,5 +16,5 @@ export abstract class Interactor<T, R = T> implements Interactor<T, R> {
   // InteractorConstructor interface to work correctly.
   // eslint-disable-next-line no-useless-constructor,@typescript-eslint/no-empty-function
   constructor() {}
-  abstract async call(): Promise<Context<R>>;
+  abstract async call(): Promise<R | Context<R>>;
 }
