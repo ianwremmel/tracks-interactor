@@ -29,19 +29,6 @@ export class Context<T> {
     this.data = data;
   }
 
-  /**
-   * Creates a new Context from the existing. Typically use to produce the
-   * return value for Interactor#call.
-   *
-   * A bit of a vestige from a time when we had Organizers. This method may be
-   * removed in favor of returning a plan value.
-   */
-  extend<R>(fn: (data: T) => R): Context<R> {
-    const nextData = fn(this.data);
-    const next = new Context(nextData);
-    return next;
-  }
-
   /** Marks this Interactor a failed */
   fail(message?: string | Error) {
     if (message instanceof Error) {

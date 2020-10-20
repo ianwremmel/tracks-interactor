@@ -8,9 +8,7 @@ describe('Interactor', () => {
       const c = new Context({a: true, services});
       i.context = c;
       await expect(i.call()).resolves.toMatchObject({
-        data: {
-          b: true,
-        },
+        b: true,
       });
     });
   });

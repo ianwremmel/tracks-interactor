@@ -25,7 +25,8 @@ export async function interact<T, R>(
   const i = new I();
   i.context = typedContext;
   try {
-    return await i.call();
+    const result = await i.call();
+    return result instanceof Context ? result : new Context(result);
   } catch (err) {
     if (err instanceof InteractorFailure) {
       return {
