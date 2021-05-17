@@ -42,7 +42,7 @@
     "@ianwremmel/eslint-plugin-ianwremmel": "^4.1.1",
     "@types/chai": "^4.1.7",
     "@types/jest": "^26.0.0",
-    "@types/node": "^14.0.9",
+    "@types/node": "^15.3.0",
     "@typescript-eslint/eslint-plugin": "^4.4.1",
     "@typescript-eslint/parser": "^4.4.1",
     "chai": "^4.2.0",
